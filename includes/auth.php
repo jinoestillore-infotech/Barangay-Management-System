@@ -5,7 +5,7 @@ session_start();
 $timeout = 1800; // 30 minutes
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 
@@ -16,7 +16,7 @@ if (
     session_unset();
     session_destroy();
 
-    header("Location: ../login.php?expired=1");
+    header("Location: ../auth/login.php?expired=1");
     exit;
 }
 
