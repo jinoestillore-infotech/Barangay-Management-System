@@ -1,0 +1,28 @@
+barangay-system/
+│
+├── assets/
+│   ├── css/
+│   ├── js/
+│   ├── uploads/
+│
+├── includes/
+│   ├── db.php
+│   ├── functions.php
+│   ├── auth.php
+│   ├── security.php
+│   ├── header.php
+│   ├── footer.php
+│
+├── modules/
+│   ├── residents/
+│   ├── certificates/
+│   ├── blotter/
+│   ├── inventory/
+│   ├── finance/
+│
+├── admin/
+│   ├── dashboard.php
+│
+├── login.php
+├── logout.php
+└── index.php

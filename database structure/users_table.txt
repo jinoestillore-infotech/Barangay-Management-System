@@ -1,0 +1,25 @@
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fullname VARCHAR(150) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM(
+        'Administrator',
+        'Barangay Captain',
+        'Secretary',
+        'Treasurer',
+        'Staff'
+    ) NOT NULL DEFAULT 'Staff',
+    profile_picture VARCHAR(255) DEFAULT NULL,
+    status ENUM(
+        'Active',
+        'Inactive',
+        'Suspended'
+    ) NOT NULL DEFAULT 'Active',
+    last_login DATETIME DEFAULT NULL,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    lock_until DATETIME DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP
+);

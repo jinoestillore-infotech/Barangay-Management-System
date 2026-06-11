@@ -1,0 +1,81 @@
+Core features typically include:
+
+Phase 1 — Foundation Modules
+
+1. Resident Information Management
+Resident profiles
+Household records
+Family relationships
+Senior citizens
+PWD records
+Voters information
+Occupation and demographic data
+
+
+2. Document & Certificate Issuance
+
+Barangay Clearance
+Certificate of Residency
+Certificate of Indigency
+Business Clearance
+Certificate of Good Moral Character
+Document request tracking
+QR Code verification
+
+3. Blotter & Incident Recording
+
+Complaint filing
+Incident reports
+Mediation records
+Case status tracking
+Settlement records
+Attachments and evidence
+
+Phase 2 — Administrative Modules
+
+4. Financial Management
+Fees and collections
+Official receipts
+Revenue reports
+Budget monitoring
+Payment history
+
+5. Officials & Staff Directory
+
+Officials profiles
+Position management
+Committee assignments
+Term management
+Staff accounts
+
+6. Inventory & Asset Management
+
+Equipment records
+Asset assignment
+Maintenance logs
+Borrowing and return tracking
+Inventory reports
+
+Phase 3 — Intelligence & Reporting
+
+7. Reporting & Analytics
+Population statistics
+Age distribution
+Resident demographics
+Monthly certificate issuance
+Blotter statistics
+Revenue reports
+Dashboard charts
+
+Development Order I Recommend:
+
+Authentication & User Roles
+Resident Information Management
+Household Management
+Certificate Issuance
+Blotter System
+Officials Directory
+Inventory Management
+Financial Management
+Reporting & Analytics
+Audit Logs & Backup System
