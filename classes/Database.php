@@ -1,29 +1,44 @@
 <?php
+/**
+ * Database Class
+ * Uses PDO for secure, parameterized query execution to prevent SQL Injection.
+ */
 
-class Database
-{
+class Database {
     private $host = "localhost";
+    private $db_name = "barangay_management_system";
     private $username = "root";
     private $password = "";
-    private $database = "barangay_management_system";
+    private $conn = null;
 
-    public $conn;
-
-    public function connect()
-    {
-        $this->conn = new mysqli(
-            $this->host,
-            $this->username,
-            $this->password,
-            $this->database
-        );
-        if ($this->conn->connect_error) {
-            die(
-                "Connection Failed: " .
-                $this->conn->connect_error
-            );
+    /**
+     * Get the database connection
+     * @return PDO|null
+     */
+    public function connect() {
+        if ($this->conn !== null) {
+            return $this->conn;
         }
-        $this->conn->set_charset("utf8mb4");
+
+        try {
+            // Set DSN (Data Source Name)
+            $dsn = "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4";
+            
+            // Configure PDO options for maximum security and reliability
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Throw exceptions on SQL errors
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Fetch associative arrays by default
+                PDO::ATTR_EMULATE_PREPARES   => false,                  // Use real prepared statements
+            ];
+
+            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+        } catch (PDOException $e) {
+            // Log error privately, show user-friendly message
+            error_log("Database Connection Error: " . $e->getMessage());
+            die("System is temporarily unavailable. Please try again later.");
+        }
+
         return $this->conn;
     }
 }
+?>

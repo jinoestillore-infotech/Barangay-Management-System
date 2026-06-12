@@ -1,0 +1,197 @@
+-- Database generation script for Barangay Management System (barangay_management_system)
+-- Aligned with OOP security requirements, failed attempt tracking, and foundation modules.
+
+CREATE DATABASE IF NOT EXISTS `barangay_management_system` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `barangay_management_system`;
+
+-- Disable foreign key checks temporarily to allow clean rebuilding
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `audit_logs`;
+DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `blotter_records`;
+DROP TABLE IF EXISTS `certificates`;
+DROP TABLE IF EXISTS `residents`;
+DROP TABLE IF EXISTS `households`;
+DROP TABLE IF EXISTS `inventory`;
+DROP TABLE IF EXISTS `users`;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- 1. USERS TABLE
+-- Tracks administrator, captains, secretaries, treasurers, and staff with brute-force protection fields
+CREATE TABLE `users` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `fullname` VARCHAR(150) NOT NULL,
+    `username` VARCHAR(50) NOT NULL UNIQUE,
+    `password` VARCHAR(255) NOT NULL,
+    `role` ENUM(
+        'Administrator',
+        'Barangay Captain',
+        'Secretary',
+        'Treasurer',
+        'Staff'
+    ) NOT NULL DEFAULT 'Staff',
+    `profile_picture` VARCHAR(255) DEFAULT NULL,
+    `status` ENUM(
+        'Active',
+        'Inactive',
+        'Suspended'
+    ) NOT NULL DEFAULT 'Active',
+    `last_login` DATETIME DEFAULT NULL,
+    `failed_attempts` INT NOT NULL DEFAULT 0,
+    `lock_until` DATETIME DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 2. AUDIT LOGS TABLE
+-- Tracks all sensitive system changes for accountability and audit compliance
+CREATE TABLE `audit_logs` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `action` TEXT NOT NULL,
+    `ip_address` VARCHAR(45) NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3. HOUSEHOLDS TABLE
+-- Groups residents into modular physical households
+CREATE TABLE `households` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `household_number` VARCHAR(50) NOT NULL UNIQUE,
+    `street` VARCHAR(100) NOT NULL,
+    `zone_purok` VARCHAR(50) NOT NULL,
+    `income_bracket` VARCHAR(100) NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 4. RESIDENTS TABLE
+-- Houses detailed demographic information, classifications, and relationships
+CREATE TABLE `residents` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `household_id` INT NULL,
+    `national_id` VARCHAR(100) NULL UNIQUE,
+    `first_name` VARCHAR(100) NOT NULL,
+    `middle_name` VARCHAR(100) NULL,
+    `last_name` VARCHAR(100) NOT NULL,
+    `extension_name` VARCHAR(10) NULL, -- Jr., Sr., III, etc.
+    `birth_date` DATE NOT NULL,
+    `birth_place` VARCHAR(255) NULL,
+    `gender` ENUM('Male', 'Female', 'Other') NOT NULL,
+    `civil_status` ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated') NOT NULL,
+    `citizenship` VARCHAR(50) DEFAULT 'Filipino',
+    `religion` VARCHAR(100) NULL,
+    `occupation` VARCHAR(100) NULL,
+    `is_voter` TINYINT(1) DEFAULT 0,
+    `is_senior` TINYINT(1) DEFAULT 0,
+    `is_pwd` TINYINT(1) DEFAULT 0,
+    `pwd_type` VARCHAR(100) NULL,
+    `relationship_to_head` VARCHAR(50) NULL, -- Head, Spouse, Son, Daughter, etc.
+    `contact_number` VARCHAR(20) NULL,
+    `email` VARCHAR(100) NULL,
+    `status` ENUM('Active', 'Deceased', 'Moved Out') DEFAULT 'Active',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`household_id`) REFERENCES `households` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- 5. CERTIFICATES / DOCUMENTS ISSUANCE TABLE
+-- Manages document processing and generation tracking with built-in verification
+CREATE TABLE `certificates` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `resident_id` INT NOT NULL,
+    `certificate_type` ENUM(
+        'Barangay Clearance',
+        'Certificate of Residency',
+        'Certificate of Indigency',
+        'Business Clearance',
+        'Certificate of Good Moral Character'
+    ) NOT NULL,
+    `purpose` VARCHAR(255) NOT NULL,
+    `or_number` VARCHAR(50) NULL, -- Connected to financial payments
+    `amount_paid` DECIMAL(10, 2) DEFAULT 0.00,
+    `issued_by` INT NOT NULL, -- User who prepared it
+    `issued_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `verification_token` VARCHAR(100) NOT NULL UNIQUE, -- For QR Code validation queries
+    `status` ENUM('Pending', 'Approved', 'Rejected', 'Issued') DEFAULT 'Pending',
+    FOREIGN KEY (`resident_id`) REFERENCES `residents` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`issued_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- 6. BLOTTER & INCIDENT RECORDS TABLE
+-- Tracks incidents, cases, statuses, and resolutions
+CREATE TABLE `blotter_records` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `case_number` VARCHAR(50) NOT NULL UNIQUE,
+    `complainant_id` INT NULL, -- Can link to a registered resident
+    `complainant_non_resident` VARCHAR(150) NULL, -- Fallback for non-residents
+    `respondent_id` INT NULL, -- Link to a registered resident
+    `respondent_non_resident` VARCHAR(150) NULL, -- Fallback for non-residents
+    `incident_type` VARCHAR(100) NOT NULL,
+    `incident_date` DATETIME NOT NULL,
+    `incident_location` VARCHAR(255) NOT NULL,
+    `details` TEXT NOT NULL,
+    `status` ENUM('Active', 'Settled', 'Scheduled for Mediation', 'Referred to Court') DEFAULT 'Active',
+    `settlement_details` TEXT NULL,
+    `recorded_by` INT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`complainant_id`) REFERENCES `residents` (`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`respondent_id`) REFERENCES `residents` (`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- 7. FINANCIAL MANAGEMENT TABLE
+-- Records payments, collections, official receipts, and administrative fees
+CREATE TABLE `payments` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `or_number` VARCHAR(50) NOT NULL UNIQUE,
+    `payer_name` VARCHAR(150) NOT NULL, -- Flexible for resident/visitor/business owner
+    `resident_id` INT NULL, -- Nullable if not a registered resident
+    `amount` DECIMAL(10, 2) NOT NULL,
+    `payment_date` DATE NOT NULL,
+    `payment_for` VARCHAR(255) NOT NULL, -- e.g., "Barangay Clearance", "Business Permit Fee"
+    `received_by` INT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`resident_id`) REFERENCES `residents` (`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`received_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- 8. INVENTORY & ASSET MANAGEMENT TABLE
+-- Tracks physical logistics, status, and assignment
+CREATE TABLE `inventory` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `asset_code` VARCHAR(50) NOT NULL UNIQUE,
+    `item_name` VARCHAR(150) NOT NULL,
+    `quantity` INT NOT NULL DEFAULT 1,
+    `available_quantity` INT NOT NULL DEFAULT 1,
+    `condition` ENUM('Excellent', 'Good', 'Fair', 'Damaged', 'Unusable') DEFAULT 'Good',
+    `location` VARCHAR(100) NULL,
+    `notes` TEXT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+-- ========================================================
+-- SEED DATA SETUP
+-- ========================================================
+
+-- Seed a default administrative user
+-- Default username: admin | Default password: password123 (Secured via standard password_hash)
+INSERT INTO `users` (
+    `id`, 
+    `fullname`, 
+    `username`, 
+    `password`, 
+    `role`, 
+    `status`
+) VALUES (
+    1, 
+    'System Administrator', 
+    'admin', 
+    '$2y$10$f6B0yM8I0i7Ybeo7pZ6xUu.D5M7F0HwR2qU9xQ22N/FzKkI9nscda', 
+    'Administrator', 
+    'Active'
+) ON DUPLICATE KEY UPDATE `username` = VALUES(`username`);
