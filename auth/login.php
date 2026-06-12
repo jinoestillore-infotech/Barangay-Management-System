@@ -3,7 +3,7 @@ session_start();
 
 // Redirect to dashboard if session already exists
 if (isset($_SESSION['user_id'])) {
-    header("Location: admin/dashboard.php");
+    header("Location: ../admin/dashboard.php");
     exit;
 }
 ?>
@@ -18,8 +18,8 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons for clean, professional iconography -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Clean, customized CSS stylesheet reference -->
-    <link href="assets/css/login.css" rel="stylesheet">
+    <!-- Clean, customized CSS stylesheet reference (Going up one level to root) -->
+    <link href="../assets/css/login.css" rel="stylesheet">
 </head>
 <body>
 
@@ -65,7 +65,7 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Form Login (Untouched backend hooks) -->
+                <!-- Form Login -->
                 <form action="process_login.php" method="POST">
                     
                     <!-- Username Field -->

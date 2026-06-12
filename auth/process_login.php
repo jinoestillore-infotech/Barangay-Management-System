@@ -1,8 +1,9 @@
 <?php
 session_start();
 
-require_once 'classes/Database.php';
-require_once 'classes/Authentication.php';
+// Corrected relative paths to go up one level out of auth/ to find classes/
+require_once '../classes/Database.php';
+require_once '../classes/Authentication.php';
 
 // Instantiate classes
 $database = new Database();
@@ -18,7 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     switch ($result) {
         case 'SUCCESS':
-            header("Location: admin/dashboard.php");
+            // Go up one level to reach admin/dashboard.php
+            header("Location: ../admin/dashboard.php");
             exit;
             
         case 'LOCKED':
@@ -43,3 +45,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Redirect home on direct GET hits
 header("Location: login.php");
 exit;
+?>
