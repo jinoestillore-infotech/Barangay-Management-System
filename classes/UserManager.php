@@ -18,6 +18,7 @@ class UserManager {
 
     /**
      * Fetch users with dynamic searching and filtering
+     * Fixes the PDO named parameter reuse bug by splitting into unique placeholders.
      * * @param string $search
      * @param string $role
      * @param string $status
@@ -30,8 +31,10 @@ class UserManager {
             $params = [];
 
             if ($search !== '') {
-                $query .= " AND (fullname LIKE :search OR username LIKE :search)";
-                $params[':search'] = '%' . $search . '%';
+                // FIXED: Using unique named placeholders (:search_fullname and :search_username) to comply with real prepared statements
+                $query .= " AND (fullname LIKE :search_fullname OR username LIKE :search_username)";
+                $params[':search_fullname'] = '%' . $search . '%';
+                $params[':search_username'] = '%' . $search . '%';
             }
 
             if ($role !== '' && in_array($role, self::ALLOWED_ROLES, true)) {
@@ -169,11 +172,13 @@ class UserManager {
             }
 
             if ($stmt->execute()) {
-                $changeDetails = !empty($data['password']) ? "and reset password" : "";
+                $changeDetails = !empty($data['password']) ? " and reset password" : "";
                 // Securely handle output variables to prevent log-traversal exploits
                 $safeDetails = htmlspecialchars($changeDetails, ENT_QUOTES, 'UTF-8');
+                $safeFullname = htmlspecialchars($cleanFullname, ENT_QUOTES, 'UTF-8');
                 
-                $this->logActivity($actorId, "Updated profile fields {$safeDetails} for User ID: " . $id);
+                // FIXED: Log fullname instead of ID
+                $this->logActivity($actorId, "Updated profile fields{$safeDetails} for: {$safeFullname}");
                 return true;
             }
             return false;
@@ -196,6 +201,10 @@ class UserManager {
                 return false;
             }
 
+            // Fetch target user fullname before executing update
+            $targetUser = $this->getUserById($id);
+            $targetName = $targetUser ? $targetUser['fullname'] : "User ID: " . $id;
+
             $query = "UPDATE users SET status = :status WHERE id = :id";
             $stmt = $this->db->prepare($query);
             $stmt->bindValue(':status', $status, PDO::PARAM_STR);
@@ -203,7 +212,9 @@ class UserManager {
             
             if ($stmt->execute()) {
                 $safeStatus = htmlspecialchars($status, ENT_QUOTES, 'UTF-8');
-                $this->logActivity($actorId, "Changed status of User ID: " . $id . " to '{$safeStatus}'");
+                $safeTargetName = htmlspecialchars($targetName, ENT_QUOTES, 'UTF-8');
+                // FIXED: Log fullname instead of ID
+                $this->logActivity($actorId, "Changed status of {$safeTargetName} to '{$safeStatus}'");
                 return true;
             }
             return false;
@@ -221,12 +232,18 @@ class UserManager {
      */
     public function unlockAccount(int $id, int $actorId): bool {
         try {
+            // Fetch target user fullname before executing unlock
+            $targetUser = $this->getUserById($id);
+            $targetName = $targetUser ? $targetUser['fullname'] : "User ID: " . $id;
+
             $query = "UPDATE users SET failed_attempts = 0, lock_until = NULL WHERE id = :id";
             $stmt = $this->db->prepare($query);
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             
             if ($stmt->execute()) {
-                $this->logActivity($actorId, "Manually unlocked user account ID: " . $id);
+                $safeTargetName = htmlspecialchars($targetName, ENT_QUOTES, 'UTF-8');
+                // FIXED: Log fullname instead of ID
+                $this->logActivity($actorId, "Manually unlocked user account: {$safeTargetName}");
                 return true;
             }
             return false;
@@ -310,3 +327,4 @@ class UserManager {
         }
     }
 }
+?>

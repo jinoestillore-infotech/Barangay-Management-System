@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         if ($userManager->updateUser($userId, $updateData, $actorId)) {
-            $successMsg = "Account for  {$fullname} has been successfully modified.";
+            $successMsg = "Account for ID #{$userId} has been successfully modified.";
         } else {
             $errorMsg = "Unable to update account details. Please try again.";
         }
@@ -119,184 +119,6 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../../assets/css/users.css" rel="stylesheet">
     
-    <!-- Clean UX/UI Overrides to resolve "eek" margins and improve scrollability -->
-    <style>
-        :root {
-            --primary-color: #2b4c7e;
-            --secondary-color: #1a3052;
-            --bg-neutral: #f8fafc;
-            --text-dark: #1e293b;
-        }
-
-        body {
-            background-color: var(--bg-neutral);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: var(--text-dark);
-        }
-
-        /* Spacious Containers */
-        .dashboard-wrapper {
-            padding-top: 2.5rem;
-            padding-bottom: 5rem;
-        }
-
-        /* Beautiful Cards with Balanced Margins & Soft Shadows */
-        .page-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            background: #ffffff;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-            margin-bottom: 1.75rem; /* Balanced gap between rows */
-        }
-
-        .page-card:hover {
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Card Headers with elegant spacing */
-        .card-header-custom {
-            background-color: #ffffff;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 1.5rem 1.75rem;
-            border-top-left-radius: 16px !important;
-            border-top-right-radius: 16px !important;
-        }
-
-        .form-control, .form-select {
-            border-color: #e2e8f0;
-            border-radius: 8px;
-            padding: 0.65rem 0.85rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
-        }
-
-        .btn {
-            border-radius: 8px;
-            font-weight: 600;
-            padding: 0.65rem 1.25rem;
-        }
-
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.875rem;
-        }
-
-        /* Unified Scrollable Card Containers */
-        .scrollable-card-body {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        /* Professional Sticky Headers inside the Scrollable Table Wrapper */
-        .table-scroll-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .table-custom {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table-custom th {
-            background-color: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1.1rem 1.25rem;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: inset 0 -1px 0 #e2e8f0;
-        }
-
-        .table-custom td {
-            vertical-align: middle;
-            padding: 1.1rem 1.25rem;
-            font-size: 0.95rem;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        /* Badges */
-        .badge-active { background: rgba(25, 135, 84, 0.1); color: #198754; }
-        .badge-inactive { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
-        .badge-suspended { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        
-        /* Security Log List Spacing */
-        .log-item {
-            padding: 1.25rem 1.75rem !important;
-            border-bottom: 1px solid #f1f5f9 !important;
-            transition: background-color 0.15s ease;
-        }
-        
-        .log-item:hover {
-            background-color: #f8fafc;
-        }
-
-        /* Breadcrumb/Back button spacing */
-        .back-link {
-            text-decoration: none;
-            color: #64748b;
-            font-weight: 600;
-            transition: color 0.15s ease;
-        }
-        
-        .back-link:hover {
-            color: var(--primary-color);
-        }
-
-        /* Sleek Modern Dropdown Menus */
-        .dropdown-menu-custom {
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02) !important;
-            border-radius: 12px;
-            padding: 0.5rem;
-        }
-
-        .dropdown-item-custom {
-            border-radius: 8px;
-            padding: 0.55rem 1rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.15s ease;
-        }
-
-        .dropdown-item-custom:hover {
-            background-color: #f1f5f9;
-            color: var(--secondary-color);
-        }
-
-        /* Custom toggle action with clean circle background */
-        .btn-action-trigger {
-            width: 36px;
-            height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: #64748b;
-            transition: all 0.2s ease;
-        }
-
-        .btn-action-trigger:hover, .btn-action-trigger:focus {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-
-        .btn-action-trigger::after {
-            display: none !important; /* Hide caret arrow */
-        }
-    </style>
 </head>
 <body>
 
@@ -635,15 +457,17 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 
 <!-- Script logic to populate Edit Modal with AJAX and auto-dismiss alerts -->
 <script>
-// Auto-dismiss alerts after 2 seconds
+// Fail-proof alert auto-dismiss script (vanilla fallback ensures it fades even if transition state hangs)
 document.addEventListener('DOMContentLoaded', () => {
     const alerts = document.querySelectorAll('.alert-dismissible');
     alerts.forEach(alert => {
         setTimeout(() => {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-            if (bsAlert) {
-                bsAlert.close();
-            }
+            alert.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            setTimeout(() => {
+                alert.remove();
+            }, 500);
         }, 2000);
     });
 });
