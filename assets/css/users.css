@@ -1,0 +1,72 @@
+:root {
+    --primary-color: #2b4c7e;
+    --secondary-color: #1a3052;
+    --bg-neutral: #f8fafc;
+    --text-dark: #1e293b;
+}
+
+body {
+    background-color: var(--bg-neutral);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
+
+.navbar-custom {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-brand-custom {
+    font-weight: 700;
+    color: var(--secondary-color);
+    letter-spacing: -0.5px;
+}
+
+.page-card {
+    border: none;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+}
+
+.form-control, .form-select {
+    border-color: #e2e8f0;
+    border-radius: 8px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.table-custom th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    border-bottom-width: 1px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-custom td {
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+.badge-active { background: rgba(25, 135, 84, 0.1); color: #198754; }
+.badge-inactive { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
+.badge-suspended { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+
+/* Mobile styling adjustments */
+@media (max-width: 576px) {
+    .btn-action-label {
+        display: none; /* Hide button text on extra-small viewports */
+    }
+}

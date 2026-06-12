@@ -27,7 +27,7 @@ if (!Authentication::checkSessionValidity()) {
  * @param array $allowedRoles
  */
 function authorizeRoles($allowedRoles) {
-    if (!isset($_SESSION['role_name']) || !in_array($_SESSION['role_name'], $allowedRoles)) {
+    if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles)) {
         // Log unauthorized access attempts
         error_log("Unauthorized Access Attempt: User ID " . ($_SESSION['user_id'] ?? 'Unknown') . " tried accessing a restricted module.");
         
@@ -50,7 +50,7 @@ function authorizeRoles($allowedRoles) {
                     <h3 class="fw-bold text-dark mb-2">Access Restrained</h3>
                     <p class="text-muted">You do not have the required permissions to view this administrative module.</p>
                     <div class="mt-4">
-                        <a href="../admin/dashboard.php" class="btn btn-primary px-4"><i class="bi bi-arrow-left me-2"></i>Return to Dashboard</a>
+                        <a href="../../admin/dashboard.php" class="btn btn-primary px-4"><i class="bi bi-arrow-left me-2"></i>Return to Dashboard</a>
                     </div>
                 </div>
             </div>
