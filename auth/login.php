@@ -1,8 +1,9 @@
 <?php
 session_start();
 
+// Redirect to dashboard if session already exists
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../admin/dashboard.php");
+    header("Location: admin/dashboard.php");
     exit;
 }
 ?>
@@ -17,8 +18,8 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons for clean, professional iconography -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="../assets/css/login.css" rel="stylesheet">
-    
+    <!-- Clean, customized CSS stylesheet reference -->
+    <link href="assets/css/login.css" rel="stylesheet">
 </head>
 <body>
 
@@ -36,16 +37,30 @@ if (isset($_SESSION['user_id'])) {
                         Barangay Management System
                     </h2>
                     <p class="text-muted small mb-0">
-                        Administrator Access Console
+                        Administrative Access Console
                     </p>
                 </div>
 
-                <!-- Error Message Alert -->
+                <!-- Rich Error Messages Handling -->
                 <?php if(isset($_GET['error'])): ?>
-                    <div class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0"></i>
-                        <div class="small">
-                            Invalid username or password.
+                    <?php 
+                        $errorType = $_GET['error'];
+                        $alertClass = 'alert-danger';
+                        $iconClass = 'bi-exclamation-triangle-fill';
+                        $errorMessage = 'Invalid username or password.';
+
+                        if ($errorType === 'locked') {
+                            $errorMessage = 'This account is temporarily locked for 15 minutes due to multiple failed attempts.';
+                        } elseif ($errorType === 'suspended') {
+                            $errorMessage = 'Your account has been suspended. Please contact the system administrator.';
+                        } elseif ($errorType === 'inactive') {
+                            $errorMessage = 'Your account is inactive. Access is limited.';
+                        }
+                    ?>
+                    <div class="alert <?php echo $alertClass; ?> d-flex align-items-center mb-4 border-0 shadow-sm" role="alert">
+                        <i class="bi <?php echo $iconClass; ?> me-2 flex-shrink-0"></i>
+                        <div class="small fw-medium">
+                            <?php echo htmlspecialchars($errorMessage); ?>
                         </div>
                     </div>
                 <?php endif; ?>
