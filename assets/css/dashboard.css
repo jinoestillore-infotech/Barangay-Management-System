@@ -1,0 +1,92 @@
+:root {
+    --primary-color: #2b4c7e;
+    --secondary-color: #1a3052;
+    --bg-neutral: #f8fafc;
+    --text-dark: #1e293b;
+}
+
+body {
+    background-color: var(--bg-neutral);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
+
+/* Top Navigation Header Styling */
+.navbar-custom {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-brand-custom {
+    font-weight: 700;
+    color: var(--secondary-color);
+    letter-spacing: -0.5px;
+}
+
+/* Profile Dropdown Styling */
+.user-profile-btn {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+}
+
+/* Quick Stat Mini-Cards */
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+
+/* Launchpad Module Cards */
+.module-card {
+    border: none;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    color: inherit;
+}
+
+.module-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .module-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+}
+
+/* Soft contextual backgrounds for cards */
+.bg-icon-primary { background: rgba(43, 76, 126, 0.1); color: #2b4c7e; }
+.bg-icon-success { background: rgba(25, 135, 84, 0.1); color: #198754; }
+.bg-icon-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.bg-icon-danger { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+.bg-icon-info { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
+.bg-icon-purple { background: rgba(111, 66, 193, 0.1); color: #6f42c1; }
