@@ -121,7 +121,7 @@ $paginationUrl = 'index.php?' . (!empty($queryString) ? $queryString . '&' : '')
     <div class="row g-3 mb-5">
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 d-flex flex-row align-items-center bg-white rounded-3">
-                <div class="p-3 rounded-circle me-3 bg-light-primary"><i class="bi bi-people-fill fs-4"></i></div>
+                <div class="p-3 rounded-3 me-3 bg-light-primary"><i class="bi bi-people-fill fs-4"></i></div>
                 <div>
                     <div class="text-muted small fw-medium">Active Inhabitants</div>
                     <div class="fs-4 fw-bold text-dark"><?php echo number_format($demographics['total_active'] ?? 0); ?></div>
@@ -130,7 +130,7 @@ $paginationUrl = 'index.php?' . (!empty($queryString) ? $queryString . '&' : '')
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 d-flex flex-row align-items-center bg-white rounded-3">
-                <div class="p-3 rounded-circle me-3 bg-light-warning"><i class="bi bi-person-badge-fill fs-4"></i></div>
+                <div class="p-3 rounded-3 me-3 bg-light-warning"><i class="bi bi-person-badge-fill fs-4"></i></div>
                 <div>
                     <div class="text-muted small fw-medium">Senior Citizens</div>
                     <div class="fs-4 fw-bold text-dark"><?php echo number_format($demographics['seniors'] ?? 0); ?></div>
@@ -139,7 +139,7 @@ $paginationUrl = 'index.php?' . (!empty($queryString) ? $queryString . '&' : '')
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 d-flex flex-row align-items-center bg-white rounded-3">
-                <div class="p-3 rounded-circle me-3 bg-light-purple"><i class="bi bi-heart-pulse-fill fs-4"></i></div>
+                <div class="p-3 rounded-3 me-3 bg-light-purple"><i class="bi bi-heart-pulse-fill fs-4"></i></div>
                 <div>
                     <div class="text-muted small fw-medium">PWD Sector</div>
                     <div class="fs-4 fw-bold text-dark"><?php echo number_format($demographics['pwds'] ?? 0); ?></div>
@@ -148,7 +148,7 @@ $paginationUrl = 'index.php?' . (!empty($queryString) ? $queryString . '&' : '')
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 d-flex flex-row align-items-center bg-white rounded-3">
-                <div class="p-3 rounded-circle me-3 bg-light-success"><i class="bi bi-clipboard2-check-fill fs-4"></i></div>
+                <div class="p-3 rounded-3 me-3 bg-light-success"><i class="bi bi-clipboard2-check-fill fs-4"></i></div>
                 <div>
                     <div class="text-muted small fw-medium">Registered Voters</div>
                     <div class="fs-4 fw-bold text-dark"><?php echo number_format($demographics['voters'] ?? 0); ?></div>
