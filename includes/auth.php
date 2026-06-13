@@ -17,7 +17,7 @@ if (!Authentication::checkSessionValidity()) {
     session_destroy();
     
     // Redirect securely back to login root
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 

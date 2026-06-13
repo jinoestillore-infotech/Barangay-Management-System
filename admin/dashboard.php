@@ -160,7 +160,19 @@ $activeStaff     = $stats['active_staff'];
             </a>
         </div>
 
-        <!-- MODULE 3: CERTIFICATES & CLEARANCES -->
+        <!-- MODULE 3: HOUSEHOLD REGISTRY (RBI) -->
+        <div class="col-12 col-sm-6 col-lg-4">
+            <a href="households/index.php" class="card module-card p-3 p-md-4">
+                <div class="module-icon bg-icon-primary">
+                    <i class="bi bi-house-gear"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Household Registry</h5>
+                <p class="text-muted small mb-0 flex-grow-1">Maintain the Registry of Barangay Inhabitants (RBI), track Purok assignments, and view household head details.</p>
+                <div class="mt-3 text-primary small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
+            </a>
+        </div>
+
+        <!-- MODULE 4: CERTIFICATES & CLEARANCES -->
         <div class="col-12 col-sm-6 col-lg-4">
             <a href="../modules/certificates/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-warning">
@@ -172,7 +184,7 @@ $activeStaff     = $stats['active_staff'];
             </a>
         </div>
 
-        <!-- MODULE 4: BLOTTER & INCIDENTS -->
+        <!-- MODULE 5: BLOTTER & INCIDENTS -->
         <div class="col-12 col-sm-6 col-lg-4">
             <a href="../modules/blotter/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-danger">
@@ -184,7 +196,7 @@ $activeStaff     = $stats['active_staff'];
             </a>
         </div>
 
-        <!-- MODULE 5: FINANCIAL MANAGEMENT -->
+        <!-- MODULE 6: FINANCIAL MANAGEMENT -->
         <div class="col-12 col-sm-6 col-lg-4">
             <a href="../modules/finance/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-info">
@@ -196,7 +208,7 @@ $activeStaff     = $stats['active_staff'];
             </a>
         </div>
 
-        <!-- MODULE 6: INVENTORY & ASSETS -->
+        <!-- MODULE 7: INVENTORY & ASSETS -->
         <div class="col-12 col-sm-6 col-lg-4">
             <a href="../modules/inventory/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-purple">
