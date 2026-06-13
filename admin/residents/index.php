@@ -25,8 +25,19 @@ $filterPurok = isset($_GET['purok_filter']) ? $_GET['purok_filter'] : '';
 $filterClass = isset($_GET['class_filter']) ? $_GET['class_filter'] : '';
 $filterStatus = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
 
-// Pull directories
-$residents = $residentManager->getResidents($searchTerm, $filterPurok, $filterClass, $filterStatus);
+// --------------------------------------------------------
+// PAGINATION SETUP
+// --------------------------------------------------------
+$limit = 10; // Maximum items per page
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($page - 1) * $limit;
+
+// Pull matching total inhabitants count
+$totalCount = $residentManager->getResidentsCount($searchTerm, $filterPurok, $filterClass, $filterStatus);
+$totalPages = ceil($totalCount / $limit);
+
+// Pull paginated slice
+$residents = $residentManager->getResidents($searchTerm, $filterPurok, $filterClass, $filterStatus, $limit, $offset);
 $demographics = $residentManager->getDemographicStats();
 
 // Pull all registered households for the linkage selector dropdown
@@ -37,6 +48,15 @@ $puroks = ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Purok 6', 'Pu
 $genders = ['Male', 'Female', 'Other'];
 $civilStatuses = ['Single', 'Married', 'Widowed', 'Divorced', 'Separated'];
 $statuses = ['Active', 'Deceased', 'Moved Out'];
+
+// Helper to keep query parameters in pagination links
+$queryString = http_build_query(array_filter([
+    'search' => $searchTerm,
+    'purok_filter' => $filterPurok,
+    'class_filter' => $filterClass,
+    'status_filter' => $filterStatus
+]));
+$paginationUrl = 'index.php?' . (!empty($queryString) ? $queryString . '&' : '') . 'page=';
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +68,7 @@ $statuses = ['Active', 'Deceased', 'Moved Out'];
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="../../assets/css/residents.css" rel="stylesheet">
+    <link href="../../assets/css/users.css" rel="stylesheet">
     <style>
         /* Contextual colors for demographic summaries */
         .bg-light-primary { background: rgba(43, 76, 126, 0.08); color: var(--primary-color); }
@@ -59,11 +79,28 @@ $statuses = ['Active', 'Deceased', 'Moved Out'];
         
         .badge-head { background: rgba(43, 76, 126, 0.1); color: var(--primary-color); }
         .badge-member { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+        /* Custom styling for pagination buttons */
+        .pagination-custom .page-link {
+            color: var(--primary-color);
+            border-color: #e2e8f0;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .pagination-custom .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #ffffff;
+        }
+        .pagination-custom .page-link:focus {
+            box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
+        }
     </style>
 </head>
 <body>
 
-<div class="container dashboard-wrapper">
+<div class="container-fluid px-4 dashboard-wrapper">
 
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5 gap-3">
         <div>
@@ -184,7 +221,7 @@ $statuses = ['Active', 'Deceased', 'Moved Out'];
     <div class="card page-card">
         <div class="card-header-custom d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Inhabitants Registry</h5>
-            <span class="badge bg-secondary rounded-pill"><?php echo count($residents); ?> Residents Registered</span>
+            <span class="badge bg-secondary rounded-pill"><?php echo $totalCount; ?> Residents Registered</span>
         </div>
         <div class="table-scroll-container">
             <table class="table table-hover table-custom">
@@ -289,6 +326,39 @@ $statuses = ['Active', 'Deceased', 'Moved Out'];
                 </tbody>
             </table>
         </div>
+
+        <!-- UI Server-Side Pagination Controls -->
+        <?php if ($totalPages > 1): ?>
+            <div class="card-footer bg-white border-0 d-flex flex-column flex-sm-row justify-content-between align-items-center px-4 py-3 border-top gap-3">
+                <div class="text-muted small">
+                    Showing <span class="fw-semibold"><?php echo $offset + 1; ?></span> to <span class="fw-semibold"><?php echo min($offset + $limit, $totalCount); ?></span> of <span class="fw-semibold"><?php echo $totalCount; ?></span> entries
+                </div>
+                <nav aria-label="Residents Directory Pagination">
+                    <ul class="pagination pagination-custom mb-0">
+                        <!-- Previous Page Anchor Button -->
+                        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo $paginationUrl . ($page - 1); ?>">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Numerical Page Selection Buttons -->
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?php echo $page === $i ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?php echo $paginationUrl . $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <!-- Next Page Anchor Button -->
+                        <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo $paginationUrl . ($page + 1); ?>">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -595,8 +665,21 @@ $statuses = ['Active', 'Deceased', 'Moved Out'];
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Auto-dismiss alert notification cards smoothly
+document.addEventListener('DOMContentLoaded', () => {
+    const alerts = document.querySelectorAll('.alert-dismissible');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            alert.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            setTimeout(() => { alert.remove(); }, 500);
+        }, 2000);
+    });
+});
+
 // Enable / Disable PWD Category fields dynamically based on checkbox state
 const handlePwdState = (checkboxId, inputId) => {
     const chk = document.getElementById(checkboxId);

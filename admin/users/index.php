@@ -40,7 +40,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 </head>
 <body>
 
-<div class="container dashboard-wrapper">
+<div class="container-fluid px-4 dashboard-wrapper">
 
     <!-- Header Block with Balanced Whitespace -->
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5 gap-3">

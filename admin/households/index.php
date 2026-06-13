@@ -45,7 +45,7 @@ $incomes = ['Low Income', 'Lower Middle Income', 'Middle Income', 'Upper Middle 
 </head>
 <body>
 
-<div class="container dashboard-wrapper">
+<div class="container-fluid px-4 dashboard-wrapper">
 
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5 gap-3">
         <div>

@@ -150,7 +150,7 @@ $activeStaff     = $stats['active_staff'];
 
         <!-- MODULE 2: RESIDENT PROFILES -->
         <div class="col-12 col-sm-6 col-lg-4">
-            <a href="../modules/residents/index.php" class="card module-card p-3 p-md-4">
+            <a href="../admin/residents/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-success">
                     <i class="bi bi-people"></i>
                 </div>
@@ -174,7 +174,7 @@ $activeStaff     = $stats['active_staff'];
 
         <!-- MODULE 4: CERTIFICATES & CLEARANCES -->
         <div class="col-12 col-sm-6 col-lg-4">
-            <a href="../modules/certificates/index.php" class="card module-card p-3 p-md-4">
+            <a href="../admin/certificates/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-warning">
                     <i class="bi bi-file-earmark-medical"></i>
                 </div>
@@ -186,7 +186,7 @@ $activeStaff     = $stats['active_staff'];
 
         <!-- MODULE 5: BLOTTER & INCIDENTS -->
         <div class="col-12 col-sm-6 col-lg-4">
-            <a href="../modules/blotter/index.php" class="card module-card p-3 p-md-4">
+            <a href="../admin/blotter/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-danger">
                     <i class="bi bi-shield-exclamation"></i>
                 </div>
@@ -198,7 +198,7 @@ $activeStaff     = $stats['active_staff'];
 
         <!-- MODULE 6: FINANCIAL MANAGEMENT -->
         <div class="col-12 col-sm-6 col-lg-4">
-            <a href="../modules/finance/index.php" class="card module-card p-3 p-md-4">
+            <a href="../admin/finance/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-info">
                     <i class="bi bi-cash-coin"></i>
                 </div>
@@ -210,7 +210,7 @@ $activeStaff     = $stats['active_staff'];
 
         <!-- MODULE 7: INVENTORY & ASSETS -->
         <div class="col-12 col-sm-6 col-lg-4">
-            <a href="../modules/inventory/index.php" class="card module-card p-3 p-md-4">
+            <a href="../admin/inventory/index.php" class="card module-card p-3 p-md-4">
                 <div class="module-icon bg-icon-purple">
                     <i class="bi bi-box-seam"></i>
                 </div>

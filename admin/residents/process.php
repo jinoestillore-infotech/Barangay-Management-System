@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             if ($residentManager->updateResident($residentId, $data, $actorId)) {
-                $_SESSION['success_flash'] = "Profile updates for ID #{$residentId} have been saved successfully.";
+                $_SESSION['success_flash'] = "Profile updates for {$first_name} have been saved successfully.";
             } else {
                 $_SESSION['error_flash'] = "Failed to update profile. Check if household head constraint was violated.";
             }
