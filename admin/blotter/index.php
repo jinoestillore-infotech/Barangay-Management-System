@@ -76,7 +76,7 @@ $statuses = ['Active', 'Scheduled for Mediation', 'Settled', 'Referred to Court'
             <a href="../dashboard.php" class="back-link d-inline-flex align-items-center mb-3">
                 <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
             </a>
-            <h1 class="fw-bold text-dark mb-1 fs-2">Barangay Dispute & Mediation Registry</h1>
+            <h1 class="fw-bold text-dark mb-1 fs-2">Dispute & Mediation Registry</h1>
             <p class="text-muted mb-0">Record civilian conflicts, schedule mediation hearings, and document amicable settlements.</p>
         </div>
         <div class="align-self-start align-self-md-center">

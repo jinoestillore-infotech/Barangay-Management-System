@@ -67,12 +67,12 @@ $conditions = ['Excellent', 'Good', 'Fair', 'Damaged', 'Unusable'];
             <a href="../dashboard.php" class="back-link d-inline-flex align-items-center mb-3">
                 <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
             </a>
-            <h1 class="fw-bold text-dark mb-1 fs-2">Barangay Property & Assets Inventory</h1>
+            <h1 class="fw-bold text-dark mb-1 fs-2">Property & Assets Inventory</h1>
             <p class="text-muted mb-0">Record public-owned utilities, tracking physical quantities, conditions, and locations.</p>
         </div>
         <div class="align-self-start align-self-md-center">
             <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                <i class="bi bi-plus-circle-fill me-2"></i> Catalog New Property
+                <i class="bi bi-plus-circle-fill me-2"></i> New Property
             </button>
         </div>
     </div>
