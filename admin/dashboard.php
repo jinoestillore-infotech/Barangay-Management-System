@@ -142,7 +142,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-person-gear"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">User Management</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Manage administrative staff credentials, system security logs, lockouts, and user roles.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagdumala sa mga account sa mga kawani, seguridad sa sistema, ug mga katungdanan sa matag user.</p>
                 <div class="mt-3 text-primary small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
@@ -155,7 +155,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-people"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Resident Information</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Maintain resident profiles, household clusters, Senior and PWD demographics, and voter records.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagdumala sa mga profile sa residente, panimalay, Senior Citizens, PWDs, ug mga rekord sa botante.</p>
                 <div class="mt-3 text-success small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
@@ -167,7 +167,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-file-earmark-medical"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Document Issuance</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Draft and print clearances, indigency, residency permits, and verify records using unique QR signatures.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Paghimo ug pag-imprenta sa mga dokumento sama sa clearance, indigency, residency, ug pag-verify pinaagi sa QR code.</p>
                 <div class="mt-3 text-warning small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
@@ -179,7 +179,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-shield-exclamation"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Blotter & Mediation</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Record community incident logs, file mediation statuses, track schedules, and attach critical evidence.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagrekord sa mga insidente sa barangay, kahimtang sa mediation, iskedyul, ug mga ebidensya.</p>
                 <div class="mt-3 text-danger small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
@@ -191,7 +191,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Financial Records</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Monitor fee collections, log official receipts, check current revenue metrics, and balance sheets.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagdumala sa koleksyon sa bayronon, mga resibo, kita, ug pinansyal nga rekord.</p>
                 <div class="mt-3 text-info small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
@@ -203,7 +203,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Asset & Logistics</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Manage barangay-owned assets, log ongoing equipment repairs, and run borrowing and return ledgers.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagdumala sa mga kabtangan sa barangay, pag-ayo sa kagamitan, ug mga rekord sa pagpahulam ug pagbalik.</p>
                 <div class="mt-3 text-purple small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
