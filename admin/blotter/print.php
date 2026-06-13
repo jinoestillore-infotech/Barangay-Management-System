@@ -101,10 +101,10 @@ $scheduled_display = $case['incident_date'] ? date('F d, Y \a\t g:i A', strtotim
 <div class="print-canvas">
     <!-- Republic of the Philippines Header -->
     <div class="text-center header-seal">
-        <div>Republic of the Philippines</div>
-        <div>Province of Central Visayas</div>
-        <div class="fw-bold text-uppercase">Municipality of Inabanga</div>
-        <div class="fw-bold text-uppercase text-primary" style="font-size: 1.1rem;">Barangay Saa</div>
+        <div class="fw-bold text-capitalize">Republic of the Philippines</div>
+        <div class="text-capitalize">Province of Central Visayas</div>
+        <div class="fw-bold text-capitalize">Municipality of Inabanga</div>
+        <div class="fw-bold text-uppercase" style="font-size: 1.1rem;">Barangay Saa</div>
         <div class="mt-2 text-muted" style="font-size: 0.75rem; font-style: italic;">Office of the Lupon Tagapamayapa</div>
         <hr class="my-3" style="border-top: 2px double #000;">
     </div>
