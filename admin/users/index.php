@@ -10,91 +10,10 @@ $database = new Database();
 $conn = $database->connect();
 $userManager = new UserManager($conn);
 
-$actorId = $_SESSION['user_id'];
-$successMsg = '';
-$errorMsg = '';
-
-// Handle AJAX User Fetching for Edit Modal
-if (isset($_GET['fetch_user'])) {
-    header('Content-Type: application/json');
-    $userData = $userManager->getUserById((int)$_GET['fetch_user']);
-    echo json_encode($userData ? $userData : ['error' => 'User not found']);
-    exit;
-}
-
-// --------------------------------------------------------
-// FORM POST REQUEST PROCESSORS
-// --------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // 1. ADD NEW SYSTEM USER
-    if (isset($_POST['action']) && $_POST['action'] === 'add_user') {
-        $fullname = trim($_POST['fullname']);
-        $username = trim($_POST['username']);
-        $password = $_POST['password'];
-        $role = $_POST['role'];
-        $status = $_POST['status'];
-
-        if ($userManager->isUsernameTaken($username)) {
-            $errorMsg = "Registration failed! The username '{$username}' is already in use.";
-        } else {
-            $userData = [
-                'fullname' => $fullname,
-                'username' => $username,
-                'password' => $password,
-                'role' => $role,
-                'status' => $status
-            ];
-            if ($userManager->createUser($userData, $actorId)) {
-                $successMsg = "System staff account '{$fullname}' was successfully created!";
-            } else {
-                $errorMsg = "Unable to process registration. Please double-check input types.";
-            }
-        }
-    }
-
-    // 2. EDIT EXISTING USER
-    if (isset($_POST['action']) && $_POST['action'] === 'edit_user') {
-        $userId = (int)$_POST['edit_user_id'];
-        $fullname = trim($_POST['edit_fullname']);
-        $role = $_POST['edit_role'];
-        $status = $_POST['edit_status'];
-        $password = $_POST['edit_password']; // Optional
-
-        $updateData = [
-            'fullname' => $fullname,
-            'role' => $role,
-            'status' => $status,
-            'password' => $password
-        ];
-
-        if ($userManager->updateUser($userId, $updateData, $actorId)) {
-            $successMsg = "Account for ID #{$userId} has been successfully modified.";
-        } else {
-            $errorMsg = "Unable to update account details. Please try again.";
-        }
-    }
-
-    // 3. QUICK STATUS OR LOCKOUT CHANGES
-    if (isset($_POST['action']) && $_POST['action'] === 'toggle_status') {
-        $userId = (int)$_POST['status_user_id'];
-        $newStatus = $_POST['new_status'];
-        if ($userManager->updateStatus($userId, $newStatus, $actorId)) {
-            $successMsg = "Status updated successfully.";
-        } else {
-            $errorMsg = "Unable to update status.";
-        }
-    }
-
-    if (isset($_POST['action']) && $_POST['action'] === 'unlock_account') {
-        $userId = (int)$_POST['unlock_user_id'];
-        if ($userManager->unlockAccount($userId, $actorId)) {
-            $successMsg = "Account unlocked. Failed attempt counters have been reset.";
-        } else {
-            $errorMsg = "Unable to unlock account.";
-        }
-    }
-}
+// Retrieve and clear flash session banners cleanly
+$successMsg = $_SESSION['success_flash'] ?? '';
+$errorMsg = $_SESSION['error_flash'] ?? '';
+unset($_SESSION['success_flash'], $_SESSION['error_flash']);
 
 // --------------------------------------------------------
 // SEARCH & FILTER RETRIEVAL
@@ -118,7 +37,6 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../../assets/css/users.css" rel="stylesheet">
-    
 </head>
 <body>
 
@@ -264,7 +182,8 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                                     <!-- Status quick toggle settings -->
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
-                                                        <form method="POST" action="">
+                                                        <!-- FIXED: Action path changed to target process.php controller -->
+                                                        <form method="POST" action="process.php">
                                                             <input type="hidden" name="action" value="toggle_status">
                                                             <input type="hidden" name="status_user_id" value="<?php echo $row['id']; ?>">
                                                             <?php if ($row['status'] !== 'Active'): ?>
@@ -289,7 +208,8 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                                     <?php if ($row['failed_attempts'] > 0 || ($row['lock_until'] && strtotime($row['lock_until']) > time())): ?>
                                                         <li><hr class="dropdown-divider my-1"></li>
                                                         <li>
-                                                            <form method="POST" action="">
+                                                            <!-- FIXED: Action path changed to target process.php controller -->
+                                                            <form method="POST" action="process.php">
                                                                 <input type="hidden" name="action" value="unlock_account">
                                                                 <input type="hidden" name="unlock_user_id" value="<?php echo $row['id']; ?>">
                                                                 <button type="submit" class="dropdown-item dropdown-item-custom d-flex align-items-center text-warning fw-semibold">
@@ -353,7 +273,8 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                 <h5 class="modal-title fw-bold text-dark" id="addUserModalLabel"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Register Staff Account</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="" method="POST">
+            <!-- FIXED: Action path changed to target process.php controller -->
+            <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="add_user">
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -405,7 +326,8 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                 <h5 class="modal-title fw-bold text-dark" id="editUserModalLabel"><i class="bi bi-pencil-square me-2 text-primary"></i>Modify Account Settings</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="" method="POST">
+            <!-- FIXED: Action path changed to target process.php controller -->
+            <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="edit_user">
                 <input type="hidden" name="edit_user_id" id="edit_user_id">
                 <div class="modal-body p-4">
@@ -476,8 +398,8 @@ document.querySelectorAll('.btn-edit-user').forEach(button => {
     button.addEventListener('click', function() {
         const userId = this.getAttribute('data-id');
         
-        // Fetch specific user data
-        fetch(`index.php?fetch_user=${userId}`)
+        // FIXED: AJAX queries now target process.php to fetch database payloads
+        fetch(`process.php?fetch_user=${userId}`)
             .then(response => response.json())
             .then(data => {
                 if(data.error) {

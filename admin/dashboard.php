@@ -167,7 +167,7 @@ $activeStaff     = $stats['active_staff'];
                     <i class="bi bi-house-gear"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Household Registry</h5>
-                <p class="text-muted small mb-0 flex-grow-1">Maintain the Registry of Barangay Inhabitants (RBI), track Purok assignments, and view household head details.</p>
+                <p class="text-muted small mb-0 flex-grow-1">Pagdumala sa Registry of Barangay Inhabitants (RBI), mga Purok assignment, ug detalye sa ulo sa panimalay.</p>
                 <div class="mt-3 text-primary small fw-semibold">Launch Module <i class="bi bi-arrow-right ms-1"></i></div>
             </a>
         </div>
