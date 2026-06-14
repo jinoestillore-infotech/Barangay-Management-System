@@ -4,12 +4,11 @@ declare(strict_types=1);
 /**
  * PaymentManager Class
  * Manages Barangay financial collection logs, Official Receipt (O.R.) ledger, and cash summaries.
- * Aligned perfectly with the database table columns: received_by and payment_for.
  */
 class PaymentManager {
     private PDO $db;
 
-    // Common standard payment categories whitelists
+    // Common standard payment categories whitelists matching database limits
     private const ALLOWED_PURPOSES = [
         'Barangay Clearance Fee',
         'Business Clearance Fee',
@@ -164,20 +163,43 @@ class PaymentManager {
     }
 
     /**
-     * Record a new financial collection transaction (with strict COA formatting guidelines)
+     * Record a new financial collection transaction securely
+     * RESOLVED: Dynamically retrieves the resident's full name to satisfy NOT NULL table constraints on `payer_name`.
      */
     public function createPayment(array $data, int $actorId): bool {
         try {
             $query = "INSERT INTO payments (or_number, resident_id, payer_name, payment_for, amount, payment_date, received_by) 
-                      VALUES (:or_number, :resident_id, :payer_name, :purpose, :amount, :payment_date, :recorded_by)";
+                      VALUES (:or_number, :resident_id, :payer_name, :payment_for, :amount, :payment_date, :received_by)";
             
             $stmt = $this->db->prepare($query);
 
             $cleanOR = strtoupper(preg_replace('/[^a-zA-Z0-9-]/', '', trim($data['or_number'])));
             $residentId = !empty($data['resident_id']) ? (int)$data['resident_id'] : null;
             $payerName = !empty($data['payer_name']) ? strip_tags(trim($data['payer_name'])) : null;
-            $purpose = in_array($data['purpose'], self::ALLOWED_PURPOSES, true) ? $data['purpose'] : 'Miscellaneous Fee';
             
+            // Support both 'payment_for' and 'purpose' payload keys seamlessly
+            $paymentForVal = $data['payment_for'] ?? $data['purpose'] ?? 'Miscellaneous Fee';
+            $purpose = in_array($paymentForVal, self::ALLOWED_PURPOSES, true) ? $paymentForVal : 'Miscellaneous Fee';
+            
+            // DYNAMIC RESOLVER: Fetch resident name if resident_id is linked but payer_name is blank
+            if ($residentId !== null && empty($payerName)) {
+                $resQuery = "SELECT first_name, last_name FROM residents WHERE id = :res_id LIMIT 1";
+                $resStmt = $this->db->prepare($resQuery);
+                $resStmt->bindValue(':res_id', $residentId, PDO::PARAM_INT);
+                $resStmt->execute();
+                $res = $resStmt->fetch();
+                if ($res) {
+                    $payerName = trim($res['first_name'] . ' ' . $res['last_name']);
+                } else {
+                    $payerName = "Registered Resident #" . $residentId;
+                }
+            }
+
+            // Fallback default name to protect NOT NULL constraint database limits
+            if (empty($payerName)) {
+                $payerName = "Anonymous Payer";
+            }
+
             // Enforce safe cash currency floats
             $amount = round((float)$data['amount'], 2);
             if ($amount < 0.00) {
@@ -190,14 +212,13 @@ class PaymentManager {
             $stmt->bindValue(':or_number', $cleanOR, PDO::PARAM_STR);
             $stmt->bindValue(':resident_id', $residentId, PDO::PARAM_INT);
             $stmt->bindValue(':payer_name', $payerName, PDO::PARAM_STR);
-            $stmt->bindValue(':purpose', $purpose, PDO::PARAM_STR);
+            $stmt->bindValue(':payment_for', $purpose, PDO::PARAM_STR);
             $stmt->bindValue(':amount', $amount, PDO::PARAM_STR);
             $stmt->bindValue(':payment_date', $paymentDate, PDO::PARAM_STR);
-            $stmt->bindValue(':recorded_by', $actorId, PDO::PARAM_INT);
+            $stmt->bindValue(':received_by', $actorId, PDO::PARAM_INT);
 
             if ($stmt->execute()) {
-                $safeName = $payerName ?? "Resident ID {$residentId}";
-                $this->logActivity($actorId, "Issued Receipt [OR #{$cleanOR}]: PHP " . number_format($amount, 2) . " from " . $safeName);
+                $this->logActivity($actorId, "Issued Receipt [OR #{$cleanOR}]: PHP " . number_format($amount, 2) . " from " . $payerName);
                 return true;
             }
             return false;
@@ -219,7 +240,7 @@ class PaymentManager {
                 'clearance_shares' => 0.00
             ];
 
-            // Single query optimization compiling total, today's cash flows, and category distributions
+            // Single query compiling total cash flow metrics
             $query = "SELECT 
                         SUM(amount) as total_revenue,
                         SUM(CASE WHEN DATE(payment_date) = CURRENT_DATE THEN amount ELSE 0 END) as today_collections,

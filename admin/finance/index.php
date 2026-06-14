@@ -233,7 +233,7 @@ $purposes = [
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light border text-dark fw-bold px-2.5 py-1.5"><i class="bi bi-tag-fill text-muted me-1"></i><?php echo htmlspecialchars($row['purpose']); ?></span>
+                                    <span class="badge bg-light border text-dark fw-bold px-2.5 py-1.5"><i class="bi bi-tag-fill text-muted me-1"></i><?php echo htmlspecialchars($row['payment_for']); ?></span>
                                 </td>
                                 <td>
                                     <span class="fw-bold text-success text-currency">₱<?php echo number_format((float)$row['amount'], 2); ?></span>
