@@ -1,0 +1,214 @@
+/**
+ * Barangay Management System - Users Module Stylesheet
+ * Fully optimized, clean, and responsive with nested layout controls.
+ */
+
+/* 1. Design Tokens & Root Variables */
+:root {
+    --primary-color: #2b4c7e;
+    --secondary-color: #1a3052;
+    --bg-neutral: #f8fafc;
+    --text-dark: #1e293b;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --card-shadow-hover: 0 6px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* 2. Global Resets & Typography */
+body {
+    background-color: var(--bg-neutral);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
+
+/* 3. Structural Containers & Navigation */
+.dashboard-wrapper {
+    padding-top: 2.5rem;
+    padding-bottom: 5rem;
+}
+
+.back-link {
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 600;
+    transition: color 0.15s ease;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+}
+
+.navbar-custom {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand-custom {
+    font-weight: 700;
+    color: var(--secondary-color);
+    letter-spacing: -0.5px;
+}
+
+/* 4. Beautiful Card Component Layouts */
+.page-card {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    margin-bottom: 1.75rem; /* Balanced gap between rows */
+}
+
+.page-card:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
+.card-header-custom {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.5rem 1.75rem;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+/* Unified Scrollable Card Containers */
+.scrollable-card-body {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* 5. Clean Form Elements */
+.form-control, .form-select {
+    border-color: var(--border-color);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
+}
+
+/* 6. Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+}
+
+/* 7. Scrollable Data Table with Sticky Headers */
+.table-scroll-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.table-custom {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-custom th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.1rem 1.25rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: inset 0 -1px 0 var(--border-color);
+}
+
+.table-custom td {
+    vertical-align: middle;
+    padding: 1.1rem 1.25rem;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* 8. Status & Role Badges */
+.badge-active {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+.badge-inactive {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.badge-suspended {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* 9. Security Audit Log Items */
+.log-item {
+    padding: 1.25rem 1.75rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: background-color 0.15s ease;
+}
+
+.log-item:hover {
+    background-color: #f8fafc;
+}
+
+/* 10. Modern Minimalist Dropdowns & Action Triggers */
+.dropdown-menu-custom {
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+    border-radius: 12px;
+    padding: 0.5rem;
+}
+
+.dropdown-item-custom {
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.dropdown-item-custom:hover {
+    background-color: #f1f5f9;
+    color: var(--secondary-color);
+}
+
+.btn-action-trigger {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.btn-action-trigger:hover, .btn-action-trigger:focus {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.btn-action-trigger::after {
+    display: none !important; /* Hide caret arrow */
+}
+
+/* 11. Mobile Responsiveness Adjustments */
+@media (max-width: 576px) {
+    .btn-action-label {
+        display: none; /* Hide action labels on small phone displays */
+    }
+}
