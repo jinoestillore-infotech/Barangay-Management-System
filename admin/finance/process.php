@@ -26,12 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($paymentManager->isOrNumberTaken($or_number)) {
             $_SESSION['error_flash'] = "Transaction failed! Official Receipt Number (O.R. #) '{$or_number}' has already been processed and recorded.";
         } else {
-            // FIXED: Synchronized payload keys with PaymentManager column mappings
+            // FIXED: Changed formatting to Y-m-d H:i:s to preserve hour and minute timestamps in the database
             $data = [
                 'or_number' => $or_number,
                 'resident_id' => !empty($_POST['resident_id']) ? (int)$_POST['resident_id'] : null,
                 'payer_name' => !empty($_POST['payer_name']) ? trim($_POST['payer_name']) : null,
-                'payment_for' => $_POST['purpose'], // aligned key parameters
+                'payment_for' => $_POST['purpose'], 
                 'amount' => $_POST['amount'],
                 'payment_date' => !empty($_POST['payment_date']) ? date('Y-m-d H:i:s', strtotime($_POST['payment_date'])) : date('Y-m-d H:i:s')
             ];
@@ -52,3 +52,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Redirect home on direct GET attempts
 header("Location: index.php");
 exit;
+?>
