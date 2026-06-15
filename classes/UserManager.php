@@ -9,7 +9,7 @@ class UserManager {
     private PDO $db;
 
     // Allowed schema values for strict validation
-    private const ALLOWED_ROLES = ['Administrator', 'Barangay Captain', 'Secretary', 'Treasurer', 'Staff'];
+    private const ALLOWED_ROLES = ['Administrator', 'Barangay Captain', 'Secretary', 'Treasurer', 'Staff', 'Citizen'];
     private const ALLOWED_STATUSES = ['Active', 'Inactive', 'Suspended'];
 
     public function __construct(PDO $databaseConnection) {
@@ -65,7 +65,7 @@ class UserManager {
      */
     public function getUserById(int $id) {
         try {
-            $query = "SELECT id, fullname, username, role, status, last_login, failed_attempts, lock_until, created_at 
+            $query = "SELECT id, fullname, username, role, status, resident_id, last_login, failed_attempts, lock_until, created_at 
                       FROM users WHERE id = :id LIMIT 1";
             
             $stmt = $this->db->prepare($query);
@@ -90,6 +90,7 @@ class UserManager {
             // Strict verification on roles and statuses
             $role = $data['role'] ?? 'Staff';
             $status = $data['status'] ?? 'Inactive';
+            $residentId = !empty($data['resident_id']) ? (int)$data['resident_id'] : null;
 
             if (!in_array($role, self::ALLOWED_ROLES, true)) {
                 $role = 'Staff';
@@ -98,8 +99,8 @@ class UserManager {
                 $status = 'Inactive';
             }
 
-            $query = "INSERT INTO users (fullname, username, password, role, status) 
-                      VALUES (:fullname, :username, :password, :role, :status)";
+            $query = "INSERT INTO users (fullname, username, password, role, status, resident_id) 
+                      VALUES (:fullname, :username, :password, :role, :status, :resident_id)";
             
             $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
             
@@ -114,7 +115,8 @@ class UserManager {
             $stmt->bindValue(':password', $hashedPassword, PDO::PARAM_STR);
             $stmt->bindValue(':role', $role, PDO::PARAM_STR);
             $stmt->bindValue(':status', $status, PDO::PARAM_STR);
-            
+            $stmt->bindValue(':resident_id', $residentId, $residentId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+
             if ($stmt->execute()) {
                 // Sanitize parameters securely before sending to logger
                 $safeLogUsername = htmlspecialchars($cleanUsername, ENT_QUOTES, 'UTF-8');
@@ -142,6 +144,7 @@ class UserManager {
         try {
             $role = $data['role'] ?? 'Staff';
             $status = $data['status'] ?? 'Active';
+            $residentId = !empty($data['resident_id']) ? (int)$data['resident_id'] : null;
 
             if (!in_array($role, self::ALLOWED_ROLES, true)) {
                 return false;
@@ -151,7 +154,7 @@ class UserManager {
             }
 
             // Build dynamic update query to handle optional password updates
-            $query = "UPDATE users SET fullname = :fullname, role = :role, status = :status";
+            $query = "UPDATE users SET fullname = :fullname, role = :role, status = :status, resident_id = :resident_id";
             
             if (!empty($data['password'])) {
                 $query .= ", password = :password, failed_attempts = 0, lock_until = NULL";
@@ -164,6 +167,7 @@ class UserManager {
             $stmt->bindValue(':fullname', $cleanFullname, PDO::PARAM_STR);
             $stmt->bindValue(':role', $role, PDO::PARAM_STR);
             $stmt->bindValue(':status', $status, PDO::PARAM_STR);
+            $stmt->bindValue(':resident_id', $residentId, $residentId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 
             if (!empty($data['password'])) {

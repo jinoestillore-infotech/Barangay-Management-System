@@ -19,8 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     switch ($result) {
         case 'SUCCESS':
-            // Go up one level to reach admin/dashboard.php
-            header("Location: ../admin/dashboard.php");
+            // Dynamic Redirect routing based on user's role configuration
+            if (isset($_SESSION['role']) && $_SESSION['role'] === 'Citizen') {
+                header("Location: ../citizen/dashboard.php");
+            } else {
+                header("Location: ../admin/dashboard.php");
+            }
             exit;
             
         case 'LOCKED':

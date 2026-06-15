@@ -1,9 +1,13 @@
 <?php
 session_start();
 
-// Redirect to dashboard if session already exists
+// Redirect if session already exists based on role
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../admin/dashboard.php");
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'Citizen') {
+        header("Location: ../citizen/dashboard.php");
+    } else {
+        header("Location: ../admin/dashboard.php");
+    }
     exit;
 }
 ?>
@@ -13,7 +17,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Barangay Management System - Admin Login</title>
+    <title>Barangay Portal Login</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons for clean, professional iconography -->
@@ -28,16 +32,16 @@ if (isset($_SESSION['user_id'])) {
         <div class="card login-card">
             <div class="card-body p-4 p-md-5">
                 
-                <!-- System Header Section -->
+                <!-- System Header Section (Unified for Officials & Citizens) -->
                 <div class="text-center mb-4">
                     <div class="system-logo">
                         <i class="bi bi-shield-check"></i>
                     </div>
                     <h2 class="system-title mb-1">
-                        Barangay Management System
+                        Barangay Portal
                     </h2>
                     <p class="text-muted small mb-0">
-                        Administrative Access Console
+                        E-Services & Administrative Access
                     </p>
                 </div>
 
@@ -71,7 +75,7 @@ if (isset($_SESSION['user_id'])) {
                     <!-- Username Field -->
                     <div class="mb-3">
                         <label class="form-label text-secondary fw-semibold small">
-                            Username
+                            Username / Account ID
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-person"></i></span>
@@ -121,6 +125,13 @@ if (isset($_SESSION['user_id'])) {
                         Sign In <i class="bi bi-arrow-right-short ms-1"></i>
                     </button>
                 </form>
+
+                <div class="mt-4 text-center">
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-info-circle text-primary me-1"></i>
+                        Citizens can claim their official portal account credentials from the Barangay Hall.
+                    </p>
+                </div>
 
                 <!-- Clean Footer Note -->
                 <div class="text-center footer-text">

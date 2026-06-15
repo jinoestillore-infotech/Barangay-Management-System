@@ -95,6 +95,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                     <option value="Secretary" <?php echo $filterRole === 'Secretary' ? 'selected' : ''; ?>>Secretary</option>
                     <option value="Treasurer" <?php echo $filterRole === 'Treasurer' ? 'selected' : ''; ?>>Treasurer</option>
                     <option value="Staff" <?php echo $filterRole === 'Staff' ? 'selected' : ''; ?>>Staff</option>
+                    <option value="Staff" <?php echo $filterRole === 'Citizen' ? 'selected' : ''; ?>>Citizen</option>
                 </select>
             </div>
             <div class="col-12 col-sm-6 col-md-2">
@@ -292,12 +293,13 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                     <div class="row g-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Role</label>
-                            <select name="role" class="form-select" required>
+                            <select name="role" class="form-select" onchange="toggleResidentDropdown('register')" required>
                                 <option value="Staff">Staff</option>
                                 <option value="Secretary">Secretary</option>
                                 <option value="Treasurer">Treasurer</option>
                                 <option value="Barangay Captain">Barangay Captain</option>
                                 <option value="Administrator">Administrator</option>
+                                <option value="Citizen">Citizen</option>
                             </select>
                         </div>
                         <div class="col-6">
@@ -306,6 +308,18 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
                             </select>
+                        </div>
+
+                        <!-- Dynamic Resident Linkage Dropdown (For Citizen Profiles only) -->
+                        <div class="mb-3" id="resident_link_wrapper" style="display: none;">
+                            <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
+                            <select name="resident_id" id="resident_id_select" class="form-select">
+                                <option value="">-- Choose Physical Resident Profile --</option>
+                                <?php foreach ($residentsList as $res): ?>
+                                    <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted d-block mt-1">Required to allow the Citizen to request clearances and file blotters under their profile.</small>
                         </div>
                     </div>
                 </div>
@@ -347,12 +361,13 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                     <div class="row g-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Assigned Role</label>
-                            <select name="edit_role" id="edit_role" class="form-select" required>
+                            <select name="edit_role" id="edit_role" class="form-select" onchange="toggleResidentDropdown('edit')" required>
                                 <option value="Staff">Staff</option>
                                 <option value="Secretary">Secretary</option>
                                 <option value="Treasurer">Treasurer</option>
                                 <option value="Barangay Captain">Barangay Captain</option>
                                 <option value="Administrator">Administrator</option>
+                                <option value="Citizen">Citizen</option>
                             </select>
                         </div>
                         <div class="col-6">
@@ -361,6 +376,16 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
                                 <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <!-- Dynamic Resident Linkage for editing -->
+                        <div class="mb-3" id="edit_resident_link_wrapper" style="display: none;">
+                            <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
+                            <select name="edit_resident_id" id="edit_resident_id_select" class="form-select">
+                                <option value="">-- Choose Physical Resident Profile --</option>
+                                <?php foreach ($residentsList as $res): ?>
+                                    <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -394,11 +419,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Dynamic toggle helper for Citizen Resident linkage inputs
+function toggleResidentDropdown(mode) {
+    if (mode === 'register') {
+        const role = document.getElementById('user_role').value;
+        const wrapper = document.getElementById('resident_link_wrapper');
+        const select = document.getElementById('resident_id_select');
+        if (role === 'Citizen') {
+            wrapper.style.display = 'block';
+            select.setAttribute('required', 'required');
+        } else {
+            wrapper.style.display = 'none';
+            select.removeAttribute('required');
+            select.value = '';
+        }
+    } else if (mode === 'edit') {
+        const role = document.getElementById('edit_role').value;
+        const wrapper = document.getElementById('edit_resident_link_wrapper');
+        const select = document.getElementById('edit_resident_id_select');
+        if (role === 'Citizen') {
+            wrapper.style.display = 'block';
+            select.setAttribute('required', 'required');
+        } else {
+            wrapper.style.display = 'none';
+            select.removeAttribute('required');
+            select.value = '';
+        }
+    }
+}
+
+// Populate Edit Modal
 document.querySelectorAll('.btn-edit-user').forEach(button => {
     button.addEventListener('click', function() {
         const userId = this.getAttribute('data-id');
         
-        // FIXED: AJAX queries now target process.php to fetch database payloads
         fetch(`process.php?fetch_user=${userId}`)
             .then(response => response.json())
             .then(data => {
@@ -410,6 +464,11 @@ document.querySelectorAll('.btn-edit-user').forEach(button => {
                     document.getElementById('edit_username').value = data.username;
                     document.getElementById('edit_role').value = data.role;
                     document.getElementById('edit_status').value = data.status;
+                    
+                    // Pre-fill resident_id and fire visibility toggles
+                    const residentSelect = document.getElementById('edit_resident_id_select');
+                    residentSelect.value = data.resident_id ? data.resident_id : '';
+                    toggleResidentDropdown('edit');
                 }
             })
             .catch(error => {

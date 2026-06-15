@@ -35,6 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $role = $_POST['role'];
         $status = $_POST['status'];
 
+        // Grab dynamic resident_id if selected as a Citizen
+        $residentId = ($role === 'Citizen' && !empty($_POST['resident_id'])) ? (int)$_POST['resident_id'] : null;
+        
         if ($userManager->isUsernameTaken($username)) {
             $_SESSION['error_flash'] = "Registration failed! The username '{$username}' is already in use.";
         } else {
@@ -43,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'username' => $username,
                 'password' => $password,
                 'role' => $role,
-                'status' => $status
+                'status' => $status,
+                'resident_id' => $residentId
             ];
             if ($userManager->createUser($userData, $actorId)) {
                 $_SESSION['success_flash'] = "System staff account '{$fullname}' was successfully created!";
@@ -61,11 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = $_POST['edit_status'];
         $password = $_POST['edit_password']; // Optional
 
+        // Grab dynamic edit resident_id
+        $residentId = ($role === 'Citizen' && !empty($_POST['edit_resident_id'])) ? (int)$_POST['edit_resident_id'] : null;
+
         $updateData = [
             'fullname' => $fullname,
             'role' => $role,
             'status' => $status,
-            'password' => $password
+            'password' => $password,
+            'resident_id' => $residentId
         ];
 
         if ($userManager->updateUser($userId, $updateData, $actorId)) {
