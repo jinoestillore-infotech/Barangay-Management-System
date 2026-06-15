@@ -39,7 +39,7 @@ class Dashboard {
             $stats['pending_certs'] = $stmt->fetch()['total'] ?? 0;
 
             // 4. Count Active Staff Users
-            $stmt = $this->db->query("SELECT COUNT(*) as total FROM users WHERE status = 'Active'");
+            $stmt = $this->db->query("SELECT COUNT(*) as total FROM users WHERE status = 'Active' AND role != 'Citizen'");
             $stats['active_staff'] = $stmt->fetch()['total'] ?? 0;
 
         } catch (PDOException $e) {

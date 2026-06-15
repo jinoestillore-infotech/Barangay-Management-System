@@ -5,10 +5,12 @@ authorizeRoles(['Administrator']);
 
 require_once '../../classes/Database.php';
 require_once '../../classes/UserManager.php';
+require_once '../../classes/ResidentManager.php';
 
 $database = new Database();
 $conn = $database->connect();
 $userManager = new UserManager($conn);
+$residentManager = new ResidentManager($conn);
 
 // Retrieve and clear flash session banners cleanly
 $successMsg = $_SESSION['success_flash'] ?? '';
@@ -24,6 +26,9 @@ $filterStatus = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
 
 $users = $userManager->getUsers($searchTerm, $filterRole, $filterStatus);
 $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log entries
+
+// Fetch active residents list to populate Citizen Profile linkages
+$residentsList = $residentManager->getResidents('', '', '', 'Active', 1000, 0);
 ?>
 
 <!DOCTYPE html>
@@ -42,26 +47,26 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 
 <div class="container-fluid px-4 dashboard-wrapper">
 
-    <!-- Header Block with Balanced Whitespace -->
+    <!-- Header Block -->
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5 gap-3">
         <div>
             <a href="../dashboard.php" class="back-link d-inline-flex align-items-center mb-3">
                 <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
             </a>
             <h1 class="fw-bold text-dark mb-1 fs-2">System User Management</h1>
-            <p class="text-muted mb-0">Create, configure, and monitor secure administrative credentials.</p>
+            <p class="text-muted mb-0">Create, configure, and monitor secure administrative and citizen credentials.</p>
         </div>
         <div class="align-self-start align-self-md-center">
             <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <i class="bi bi-person-plus-fill me-2"></i> Register New Staff
+                <i class="bi bi-person-plus-fill me-2"></i> Register User Account
             </button>
         </div>
     </div>
 
-    <!-- Dismissible Feedback Alerts with consistent shadows -->
+    <!-- Feedback Alerts -->
     <?php if(!empty($successMsg)): ?>
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm d-flex align-items-center p-3 mb-4 rounded-3" role="alert">
-            <i class="bi bi-check-circle-fill me-3 fs-4 text-success animate__animated animate__fadeIn"></i>
+            <i class="bi bi-check-circle-fill me-3 fs-4 text-success"></i>
             <div class="fw-medium me-5"><?php echo htmlspecialchars($successMsg); ?></div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -69,7 +74,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 
     <?php if(!empty($errorMsg)): ?>
         <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm d-flex align-items-center p-3 mb-4 rounded-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-danger animate__animated animate__fadeIn"></i>
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-danger"></i>
             <div class="fw-medium me-5"><?php echo htmlspecialchars($errorMsg); ?></div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -95,7 +100,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                     <option value="Secretary" <?php echo $filterRole === 'Secretary' ? 'selected' : ''; ?>>Secretary</option>
                     <option value="Treasurer" <?php echo $filterRole === 'Treasurer' ? 'selected' : ''; ?>>Treasurer</option>
                     <option value="Staff" <?php echo $filterRole === 'Staff' ? 'selected' : ''; ?>>Staff</option>
-                    <option value="Staff" <?php echo $filterRole === 'Citizen' ? 'selected' : ''; ?>>Citizen</option>
+                    <option value="Citizen" <?php echo $filterRole === 'Citizen' ? 'selected' : ''; ?>>Citizen</option>
                 </select>
             </div>
             <div class="col-12 col-sm-6 col-md-2">
@@ -113,17 +118,16 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
         </form>
     </div>
 
-    <!-- Main Content Layout (Increased gutters to clear "eek" look) -->
+    <!-- Main Content Layout -->
     <div class="row g-4 g-lg-5">
         
-        <!-- Table Column (Scrollable Card) -->
+        <!-- Table Column -->
         <div class="col-12 col-xl-8">
             <div class="card page-card">
                 <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Staff Directory</h5>
-                    <span class="badge bg-secondary rounded-pill"><?php echo count($users); ?> Users</span>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Accounts Directory</h5>
+                    <span class="badge bg-secondary rounded-pill"><?php echo count($users); ?> Total Users</span>
                 </div>
-                <!-- Fixed Height Scrollable Container with Sticky Table Headers -->
                 <div class="table-scroll-container">
                     <table class="table table-hover table-custom">
                         <thead>
@@ -140,7 +144,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <tr>
                                     <td colspan="5" class="text-center py-5 text-muted">
                                         <i class="bi bi-person-x fs-1 mb-2 d-block"></i>
-                                        No active staff accounts match your current query.
+                                        No active system accounts match your current query.
                                     </td>
                                 </tr>
                             <?php else: ?>
@@ -151,9 +155,15 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                             <div class="text-muted small">@<?php echo htmlspecialchars($row['username']); ?></div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-light border text-dark fw-semibold">
-                                                <i class="bi bi-shield-check text-primary me-1"></i><?php echo $row['role']; ?>
-                                            </span>
+                                            <?php if ($row['role'] === 'Citizen'): ?>
+                                                <span class="badge bg-info-subtle text-info border border-info fw-semibold">
+                                                    <i class="bi bi-person-fill me-1"></i><?php echo $row['role']; ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-light border text-dark fw-semibold">
+                                                    <i class="bi bi-shield-check text-primary me-1"></i><?php echo $row['role']; ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <?php 
@@ -167,23 +177,18 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                             <?php echo $row['last_login'] ? date('M d, g:i A', strtotime($row['last_login'])) : '<span class="text-black-50">Never logged in</span>'; ?>
                                         </td>
                                         <td class="text-end">
-                                            <!-- Modern Minimalist Actions Button with Professional Dropdown Menu -->
                                             <div class="dropdown d-inline-block">
                                                 <button class="btn-action-trigger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="bi bi-three-dots-vertical"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg dropdown-menu-custom">
-                                                    <!-- Edit Action -->
                                                     <li>
                                                         <button class="dropdown-item dropdown-item-custom d-flex align-items-center btn-edit-user" data-id="<?php echo $row['id']; ?>" data-bs-toggle="modal" data-bs-target="#editUserModal">
                                                             <i class="bi bi-pencil-square me-2 text-primary"></i> Edit Profile
                                                         </button>
                                                     </li>
-                                                    
-                                                    <!-- Status quick toggle settings -->
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
-                                                        <!-- FIXED: Action path changed to target process.php controller -->
                                                         <form method="POST" action="process.php">
                                                             <input type="hidden" name="action" value="toggle_status">
                                                             <input type="hidden" name="status_user_id" value="<?php echo $row['id']; ?>">
@@ -204,12 +209,9 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                                             <?php endif; ?>
                                                         </form>
                                                     </li>
-
-                                                    <!-- Dynamic Account Unlock Trigger -->
                                                     <?php if ($row['failed_attempts'] > 0 || ($row['lock_until'] && strtotime($row['lock_until']) > time())): ?>
                                                         <li><hr class="dropdown-divider my-1"></li>
                                                         <li>
-                                                            <!-- FIXED: Action path changed to target process.php controller -->
                                                             <form method="POST" action="process.php">
                                                                 <input type="hidden" name="action" value="unlock_account">
                                                                 <input type="hidden" name="unlock_user_id" value="<?php echo $row['id']; ?>">
@@ -231,13 +233,12 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
             </div>
         </div>
 
-        <!-- Audit Logs Column (Scrollable Card) -->
+        <!-- Audit Logs Column -->
         <div class="col-12 col-xl-4">
             <div class="card page-card h-100">
                 <div class="card-header-custom">
                     <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-activity text-danger me-2"></i>Security Logs</h5>
                 </div>
-                <!-- Custom Scrollable Body aligned with the Directory table height -->
                 <div class="scrollable-card-body p-0">
                     <div class="list-group list-group-flush">
                         <?php if (empty($auditLogs)): ?>
@@ -263,18 +264,17 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 </div>
 
 <!-- ========================================================
-     MODALS SECTION (REGISTER AND MODIFY USER DIALOGUES)
+     MODALS SECTION
      ======================================================== -->
 
-<!-- 1. REGISTER STAFF MODAL -->
+<!-- 1. REGISTER STAFF/CITIZEN ACCOUNT MODAL -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header border-0 p-4 pb-2">
-                <h5 class="modal-title fw-bold text-dark" id="addUserModalLabel"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Register Staff Account</h5>
+                <h5 class="modal-title fw-bold text-dark" id="addUserModalLabel"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Register System Account</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- FIXED: Action path changed to target process.php controller -->
             <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="add_user">
                 <div class="modal-body p-4">
@@ -284,22 +284,22 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Username</label>
-                        <input type="text" name="username" class="form-control" placeholder="Staff Username (alphanumeric)" required>
+                        <input type="text" name="username" class="form-control" placeholder="Login Account Username" required>
                     </div>
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-secondary">Temporary Password</label>
                         <input type="password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
                     </div>
-                    <div class="row g-3">
+                    <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-secondary">Role</label>
-                            <select name="role" class="form-select" onchange="toggleResidentDropdown('register')" required>
+                            <label class="form-label small fw-bold text-secondary">User Role</label>
+                            <select name="role" id="user_role" class="form-select" onchange="toggleResidentDropdown('register')" required>
                                 <option value="Staff">Staff</option>
                                 <option value="Secretary">Secretary</option>
                                 <option value="Treasurer">Treasurer</option>
                                 <option value="Barangay Captain">Barangay Captain</option>
                                 <option value="Administrator">Administrator</option>
-                                <option value="Citizen">Citizen</option>
+                                <option value="Citizen">Citizen (Inhabitant)</option>
                             </select>
                         </div>
                         <div class="col-6">
@@ -309,18 +309,18 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <option value="Inactive">Inactive</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Dynamic Resident Linkage Dropdown (For Citizen Profiles only) -->
-                        <div class="mb-3" id="resident_link_wrapper" style="display: none;">
-                            <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
-                            <select name="resident_id" id="resident_id_select" class="form-select">
-                                <option value="">-- Choose Physical Resident Profile --</option>
-                                <?php foreach ($residentsList as $res): ?>
-                                    <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <small class="text-muted d-block mt-1">Required to allow the Citizen to request clearances and file blotters under their profile.</small>
-                        </div>
+                    <!-- Dynamic Resident Linkage Dropdown (For Citizen Profiles only) -->
+                    <div class="mb-3" id="resident_link_wrapper" style="display: none;">
+                        <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
+                        <select name="resident_id" id="resident_id_select" class="form-select">
+                            <option value="">-- Choose Physical Resident Profile --</option>
+                            <?php foreach ($residentsList as $res): ?>
+                                <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-muted d-block mt-1">Required to allow the Citizen to request clearances and file blotters under their profile.</small>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0 p-4 rounded-bottom-4">
@@ -332,7 +332,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
     </div>
 </div>
 
-<!-- 2. EDIT STAFF MODAL -->
+<!-- 2. EDIT ACCOUNT MODAL -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
@@ -340,7 +340,6 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                 <h5 class="modal-title fw-bold text-dark" id="editUserModalLabel"><i class="bi bi-pencil-square me-2 text-primary"></i>Modify Account Settings</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- FIXED: Action path changed to target process.php controller -->
             <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="edit_user">
                 <input type="hidden" name="edit_user_id" id="edit_user_id">
@@ -358,7 +357,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                         <label class="form-label small fw-bold text-secondary">Update Password</label>
                         <input type="password" name="edit_password" class="form-control" placeholder="Leave empty to keep existing password">
                     </div>
-                    <div class="row g-3">
+                    <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Assigned Role</label>
                             <select name="edit_role" id="edit_role" class="form-select" onchange="toggleResidentDropdown('edit')" required>
@@ -367,7 +366,7 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <option value="Treasurer">Treasurer</option>
                                 <option value="Barangay Captain">Barangay Captain</option>
                                 <option value="Administrator">Administrator</option>
-                                <option value="Citizen">Citizen</option>
+                                <option value="Citizen">Citizen (Inhabitant)</option>
                             </select>
                         </div>
                         <div class="col-6">
@@ -378,16 +377,17 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
                                 <option value="Suspended">Suspended</option>
                             </select>
                         </div>
-                        <!-- Dynamic Resident Linkage for editing -->
-                        <div class="mb-3" id="edit_resident_link_wrapper" style="display: none;">
-                            <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
-                            <select name="edit_resident_id" id="edit_resident_id_select" class="form-select">
-                                <option value="">-- Choose Physical Resident Profile --</option>
-                                <?php foreach ($residentsList as $res): ?>
-                                    <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    </div>
+
+                    <!-- Dynamic Resident Linkage for editing -->
+                    <div class="mb-3" id="edit_resident_link_wrapper" style="display: none;">
+                        <label class="form-label small fw-bold text-secondary">Link to Resident demographic Profile</label>
+                        <select name="edit_resident_id" id="edit_resident_id_select" class="form-select">
+                            <option value="">-- Choose Physical Resident Profile --</option>
+                            <?php foreach ($residentsList as $res): ?>
+                                <option value="<?php echo $res['id']; ?>"><?php echo htmlspecialchars($res['last_name'] . ', ' . $res['first_name'] . ' ' . ($res['middle_name'] ?? '')); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0 p-4 rounded-bottom-4">
@@ -402,9 +402,8 @@ $auditLogs = $userManager->getSecurityLogs(15); // Show last 15 security log ent
 <!-- Bootstrap Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Script logic to populate Edit Modal with AJAX and auto-dismiss alerts -->
 <script>
-// Fail-proof alert auto-dismiss script (vanilla fallback ensures it fades even if transition state hangs)
+// Auto-dismiss alerts
 document.addEventListener('DOMContentLoaded', () => {
     const alerts = document.querySelectorAll('.alert-dismissible');
     alerts.forEach(alert => {
@@ -412,9 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
             alert.style.opacity = "0";
             alert.style.transform = "translateY(-10px)";
-            setTimeout(() => {
-                alert.remove();
-            }, 500);
+            setTimeout(() => { alert.remove(); }, 500);
         }, 2000);
     });
 });
