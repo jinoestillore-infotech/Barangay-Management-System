@@ -23,110 +23,6 @@ $errorMsg = $_SESSION['error_flash'] ?? '';
 unset($_SESSION['success_flash'], $_SESSION['error_flash']);
 
 // --------------------------------------------------------
-// PROCESS USER POST ACTIONS (Self-contained controllers)
-// --------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $residentId !== null) {
-    
-    // 1. PROCESS DOCUMENT REQUEST
-    if (isset($_POST['action']) && $_POST['action'] === 'request_clearance') {
-        $certType = $_POST['certificate_type'] ?? '';
-        $purpose = trim($_POST['purpose'] ?? '');
-
-        // Whitelist validation
-        $allowedCerts = [
-            'Barangay Clearance',
-            'Certificate of Residency',
-            'Certificate of Indigency',
-            'Business Clearance',
-            'Certificate of Good Moral Character'
-        ];
-
-        if (!in_array($certType, $allowedCerts, true) || empty($purpose)) {
-            $_SESSION['error_flash'] = "Failed to file request. Please select a valid document type and specify your purpose.";
-        } else {
-            try {
-                // Generate a unique 16-character alphanumeric verification token
-                $verificationToken = strtoupper(bin2hex(random_bytes(8)));
-
-                // Default issued_by to 1 (System Admin) as a temporary pending handler, status to 'Pending'
-                $query = "INSERT INTO certificates (resident_id, certificate_type, purpose, issued_by, status, verification_token) 
-                          VALUES (:res_id, :cert_type, :purpose, 1, 'Pending', :token)";
-                
-                $stmt = $conn->prepare($query);
-                $stmt->bindValue(':res_id', $residentId, PDO::PARAM_INT);
-                $stmt->bindValue(':cert_type', $certType, PDO::PARAM_STR);
-                $stmt->bindValue(':purpose', strip_tags($purpose), PDO::PARAM_STR);
-                $stmt->bindValue(':token', $verificationToken, PDO::PARAM_STR);
-
-                if ($stmt->execute()) {
-                    $_SESSION['success_flash'] = "Your request for a '{$certType}' has been submitted successfully! Track its status in your dashboard below.";
-                } else {
-                    $_SESSION['error_flash'] = "Unable to process document request. Database communication failed.";
-                }
-            } catch (Exception $e) {
-                error_log("Citizen request error: " . $e->getMessage());
-                $_SESSION['error_flash'] = "System error occurred. Please try again later.";
-            }
-        }
-        header("Location: dashboard.php");
-        exit;
-    }
-
-    // 2. PROCESS INCIDENT / BLOTTER REPORT FILING
-    if (isset($_POST['action']) && $_POST['action'] === 'file_blotter') {
-        $incidentType = $_POST['incident_type'] ?? '';
-        $incidentDate = $_POST['incident_date'] ?? '';
-        $location = trim($_POST['incident_location'] ?? '');
-        $details = trim($_POST['details'] ?? '');
-        $respondent = trim($_POST['respondent_non_resident'] ?? '');
-
-        if (empty($incidentType) || empty($incidentDate) || empty($location) || empty($details)) {
-            $_SESSION['error_flash'] = "Incident report rejected. All fields except the respondent name are strictly required.";
-        } else {
-            try {
-                // Auto-generate sequential case code: KP-YYYY-XXXX
-                $year = date('Y');
-                $countQuery = "SELECT COUNT(id) as total FROM blotter_records WHERE YEAR(created_at) = :year";
-                $countStmt = $conn->prepare($countQuery);
-                $countStmt->bindValue(':year', $year, PDO::PARAM_STR);
-                $countStmt->execute();
-                $seqCount = ($countStmt->fetch()['total'] ?? 0) + 1;
-                $caseNumber = sprintf("KP-%s-%04d", $year, $seqCount);
-
-                // Insert into blotter_records with status 'Active'
-                $query = "INSERT INTO blotter_records (
-                            case_number, complainant_id, respondent_non_resident, 
-                            incident_type, incident_date, incident_location, details, status, recorded_by
-                          ) VALUES (
-                            :case_number, :complainant_id, :respondent, 
-                            :incident_type, :incident_date, :location, :details, 'Active', 1
-                          )";
-                
-                $stmt = $conn->prepare($query);
-                $stmt->bindValue(':case_number', $caseNumber, PDO::PARAM_STR);
-                $stmt->bindValue(':complainant_id', $residentId, PDO::PARAM_INT);
-                $stmt->bindValue(':respondent', !empty($respondent) ? strip_tags($respondent) : 'Unknown Respondent', PDO::PARAM_STR);
-                $stmt->bindValue(':incident_type', strip_tags($incidentType), PDO::PARAM_STR);
-                $stmt->bindValue(':incident_date', $incidentDate, PDO::PARAM_STR);
-                $stmt->bindValue(':location', strip_tags($location), PDO::PARAM_STR);
-                $stmt->bindValue(':details', strip_tags($details), PDO::PARAM_STR);
-
-                if ($stmt->execute()) {
-                    $_SESSION['success_flash'] = "Incident report successfully filed! Case assigned Case #{$caseNumber}.";
-                } else {
-                    $_SESSION['error_flash'] = "Unable to file incident report. Please verify parameters.";
-                }
-            } catch (Exception $e) {
-                error_log("Citizen filing error: " . $e->getMessage());
-                $_SESSION['error_flash'] = "Internal system failure while submitting report.";
-            }
-        }
-        header("Location: dashboard.php");
-        exit;
-    }
-}
-
-// --------------------------------------------------------
 // RETRIEVE USER PROFILE & HISTORICAL RECORDS
 // --------------------------------------------------------
 $residentProfile = null;
@@ -208,119 +104,7 @@ if ($residentId !== null) {
     <!-- Bootstrap 5 CSS & Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #2b4c7e;
-            --secondary-color: #1a3052;
-            --bg-neutral: #f8fafc;
-            --text-dark: #1e293b;
-        }
-
-        body {
-            background-color: var(--bg-neutral);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: var(--text-dark);
-        }
-
-        .navbar-custom {
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .navbar-brand-custom {
-            font-weight: 700;
-            color: var(--secondary-color);
-            letter-spacing: -0.5px;
-        }
-
-        .user-profile-btn {
-            background: none;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0;
-        }
-
-        .stat-card {
-            border: none;
-            border-radius: 12px;
-            background: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .module-card {
-            border: none;
-            border-radius: 16px;
-            background: #ffffff;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            color: inherit;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-            color: inherit;
-            cursor: pointer;
-        }
-
-        .module-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.35rem;
-            margin-bottom: 1rem;
-        }
-
-        .bg-icon-primary { background: rgba(43, 76, 126, 0.1); color: #2b4c7e; }
-        .bg-icon-success { background: rgba(25, 135, 84, 0.1); color: #198754; }
-        .bg-icon-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .bg-icon-danger { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .bg-icon-info { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
-
-        .table-custom {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table-custom th {
-            background-color: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 1.25rem;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table-custom td {
-            vertical-align: middle;
-            padding: 1rem 1.25rem;
-            font-size: 0.95rem;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .badge-active { background: rgba(25, 135, 84, 0.1); color: #198754; }
-        .badge-pending { background: rgba(255, 193, 7, 0.15); color: #b58105; }
-        .badge-danger { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .badge-info { background: rgba(13, 202, 240, 0.15); color: #0d6efd; }
-    </style>
+    <link href="../assets/css/citizen.css" rel="stylesheet">
 </head>
 <body>
 
@@ -428,7 +212,7 @@ if ($residentId !== null) {
             <div class="col-6 col-lg-3">
                 <div class="card stat-card p-3 d-flex flex-row align-items-center h-100">
                     <div class="bg-icon-danger rounded-3 p-2 p-sm-3 me-2 me-sm-3 d-flex align-items-center justify-content-center">
-                        <i class="bi bi-gavel fs-5 fs-sm-4"></i>
+                        <i class="bi bi-exclamation-octagon  fs-5 fs-sm-4"></i>
                     </div>
                     <div>
                         <h6 class="text-muted small mb-0 mb-sm-1" style="font-size: 0.75rem;">Blotter Cases</h6>
@@ -668,7 +452,8 @@ if ($residentId !== null) {
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="dashboard.php" method="POST">
+            <!-- FIXED: Action redirected directly to process.php backend controller -->
+            <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="request_clearance">
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -707,7 +492,8 @@ if ($residentId !== null) {
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="dashboard.php" method="POST">
+            <!-- FIXED: Action redirected directly to process.php backend controller -->
+            <form action="process.php" method="POST">
                 <input type="hidden" name="action" value="file_blotter">
                 <div class="modal-body p-4">
                     <div class="row g-3 mb-3">
