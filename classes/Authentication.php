@@ -1,7 +1,7 @@
 <?php
 /**
  * Authentication Class
- * Aligned with the database schema's security features and brute-force tracking.
+ * Aligned with the database schema's security features, brute-force tracking, and Citizen profile linkages.
  */
 class Authentication {
     private $db;
@@ -13,7 +13,7 @@ class Authentication {
     }
 
     /**
-     * Authenticate a system user with brute-force protection
+     * Authenticate a system user or citizen with brute-force protection
      * @param string $username
      * @param string $password
      * @return string Status code: 'SUCCESS', 'INVALID', 'LOCKED', 'SUSPENDED', 'INACTIVE'
@@ -57,9 +57,10 @@ class Authentication {
                 session_regenerate_id(true);
 
                 $_SESSION['user_id'] = $user['id'];
+                $_SESSION['resident_id'] = !empty($user['resident_id']) ? (int)$user['resident_id'] : null; // Linkage to demographic profile
                 $_SESSION['fullname'] = $user['fullname'];
                 $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['role'] = $user['role']; // e.g., 'Citizen', 'Administrator', etc.
                 $_SESSION['profile_picture'] = $user['profile_picture'];
                 $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
                 $_SESSION['user_ip'] = $_SERVER['REMOTE_ADDR'];

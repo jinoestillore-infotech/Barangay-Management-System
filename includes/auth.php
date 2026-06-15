@@ -2,6 +2,7 @@
 /**
  * Authentication Middleware Check
  * Included on admin pages to verify the user is logged in.
+ * Includes a dynamic path-depth calculator to ensure relative redirects never break.
  */
 
 require_once __DIR__ . '/../classes/Authentication.php';
@@ -16,20 +17,36 @@ if (!Authentication::checkSessionValidity()) {
     $_SESSION = array();
     session_destroy();
     
-    // Redirect securely back to login root
-    header("Location: ../auth/login.php");
+    // DYNAMIC DEPTH CALCULATOR: Computes distance from currently executing script to project root
+    $projectRoot = str_replace('\\', '/', dirname(__DIR__)); 
+    $currentScript = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']); 
+    $relativeDir = trim(str_replace($projectRoot, '', dirname($currentScript)), '/');
+    
+    $depth = empty($relativeDir) ? 0 : substr_count($relativeDir, '/') + 1;
+    $goToRoot = str_repeat('../', $depth);
+    
+    // Redirect securely back to login root relative to the executing file
+    header("Location: " . $goToRoot . "auth/login.php");
     exit;
 }
 
 /**
  * Access Control Helper
- * Usage: authorizeRoles(['Super Admin', 'Secretary']);
+ * Usage: authorizeRoles(['Administrator', 'Secretary']);
  * @param array $allowedRoles
  */
 function authorizeRoles($allowedRoles) {
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles)) {
         // Log unauthorized access attempts
         error_log("Unauthorized Access Attempt: User ID " . ($_SESSION['user_id'] ?? 'Unknown') . " tried accessing a restricted module.");
+        
+        // Calculate dynamic depth for the Access Denied return button link as well
+        $projectRoot = str_replace('\\', '/', dirname(__DIR__)); 
+        $currentScript = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']); 
+        $relativeDir = trim(str_replace($projectRoot, '', dirname($currentScript)), '/');
+        
+        $depth = empty($relativeDir) ? 0 : substr_count($relativeDir, '/') + 1;
+        $goToRoot = str_repeat('../', $depth);
         
         // Show an elegant access-denied state instead of a blank screen
         echo '<!DOCTYPE html>
@@ -50,7 +67,7 @@ function authorizeRoles($allowedRoles) {
                     <h3 class="fw-bold text-dark mb-2">Access Restrained</h3>
                     <p class="text-muted">You do not have the required permissions to view this administrative module.</p>
                     <div class="mt-4">
-                        <a href="../../admin/dashboard.php" class="btn btn-primary px-4"><i class="bi bi-arrow-left me-2"></i>Return to Dashboard</a>
+                        <a href="' . $goToRoot . 'admin/dashboard.php" class="btn btn-primary px-4"><i class="bi bi-arrow-left me-2"></i>Return to Dashboard</a>
                     </div>
                 </div>
             </div>
